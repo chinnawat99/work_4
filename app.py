@@ -1,36 +1,48 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-from prediction import predict
+from sklearn import datasets
+from sklearn.ensemble import RandomForestClassifier
 
+st.write("""
+# Simple Iris Flower Prediction App
+This app predicts the **Iris flower** type!
+""")
 
-st.title('Classifying Iris Flowers')
-st.markdown('Toy model to play to classify iris flowers into \
-     (setosa, versicolor, virginica) based on their sepal/petal \
-    and length/width.')
+st.sidebar.header('User Input Parameters')
 
-st.header("Plant Features")
-col1, col2 = st.columns(2)
+def user_input_features():
+    sepal_length = st.sidebar.slider('Sepal length', 4.3, 7.9, 5.4)
+    sepal_width = st.sidebar.slider('Sepal width', 2.0, 4.4, 3.4)
+    petal_length = st.sidebar.slider('Petal length', 1.0, 6.9, 1.3)
+    petal_width = st.sidebar.slider('Petal width', 0.1, 2.5, 0.2)
+    data = {'sepal_length': sepal_length,
+            'sepal_width': sepal_width,
+            'petal_length': petal_length,
+            'petal_width': petal_width}
+    features = pd.DataFrame(data, index=[0])
+    return features
 
-with col1:
-    st.text("Sepal characteristics")
-    sepal_l = st.slider('Sepal lenght (cm)', 1.0, 8.0, 0.5)
-    sepal_w = st.slider('Sepal width (cm)', 2.0, 4.4, 0.5)
+df = user_input_features()
 
-with col2:
-    st.text("Pepal characteristics")
-    petal_l = st.slider('Petal lenght (cm)', 1.0, 7.0, 0.5)
-    petal_w = st.slider('Petal width (cm)', 0.1, 2.5, 0.5)
+st.subheader('User Input parameters')
+st.write(df)
 
-st.text('')
-if st.button("Predict type of Iris"):
-    result = predict(
-        np.array([[sepal_l, sepal_w, petal_l, petal_w]]))
-    st.text(result[0])
+iris = datasets.load_iris()
+X = iris.data
+Y = iris.target
 
+clf = RandomForestClassifier()
+clf.fit(X, Y)
 
-st.text('')
-st.text('')
-st.markdown(
-    '`Create by` [santiviquez](https://twitter.com/santiviquez) | \
-         `Code:` [GitHub](https://github.com/santiviquez/iris-streamlit)')
+prediction = clf.predict(df)
+prediction_proba = clf.predict_proba(df)
+
+st.subheader('Class labels and their corresponding index number')
+st.write(iris.target_names)
+
+st.subheader('Prediction')
+st.write(iris.target_names[prediction])
+#st.write(prediction)
+
+st.subheader('Prediction Probability')
+st.write(prediction_proba)
